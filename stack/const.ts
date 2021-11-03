@@ -5,14 +5,16 @@ const env = app.node.tryGetContext("env")==undefined?'dev':app.node.tryGetContex
 
 let vpc = {
     CIRD : '10.0.0.0/16',
-    cidrMask : 24
+    cidrMask_public : 24,
+    cidrMask_private : 24
 }
 
 // for stag and prod stack
 if (env != 'dev') {
     vpc = {
-        CIRD : '11.0.0.0/16',
-        cidrMask : 24
+        CIRD : '10.0.0.0/16',
+        cidrMask_public : 20,
+        cidrMask_private : 24
     }    
 } 
 

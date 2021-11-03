@@ -38,12 +38,12 @@ export class VpcStack extends BaseStack {
       cidr: env_const.devvpc.CIRD,
       subnetConfiguration: [
         {   // for public subnet with NAT gateway
-            cidrMask: env_const.devvpc.cidrMask,
+            cidrMask: env_const.devvpc.cidrMask_public,
             name: 'public',
             subnetType: ec2.SubnetType.PUBLIC,
         },
         {   // for private subnet
-            cidrMask: env_const.devvpc.cidrMask,
+            cidrMask: env_const.devvpc.cidrMask_private,
             name: 'private',
             subnetType: ec2.SubnetType.PRIVATE,
         },
