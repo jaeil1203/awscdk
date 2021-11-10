@@ -19,6 +19,9 @@
 import * as cdk from '@aws-cdk/core';
 import * as ec2 from "@aws-cdk/aws-ec2";
 import * as s3 from "@aws-cdk/aws-s3";
+import * as rds from '@aws-cdk/aws-rds';
+import * as iam from '@aws-cdk/aws-iam';
+import * as env_const from './const'
 import { BaseStack } from '../lib/base-stack';
 import { AppContext } from '../lib/app-context';
 
@@ -41,6 +44,9 @@ export class ResourceStack extends BaseStack {
     this.createMediaBucket(`SKBEncodingSysBucketOutput`, `output`, false, env)
     this.createMediaBucket(`SKBEncodingSysBucketError`, `error`, false, env)
     this.createMediaBucket(`SKBEncodingSysBucketSystemSetting`, `system-settings`, true, env) // versioned s3
+
+    // rds serverless cluster creation
+    this.createRDSAuroraServerless(vpc, env);
   }
 
   private createMediaBucket(stackName: string, buckename: string, ver: boolean, env: string)
@@ -58,5 +64,76 @@ export class ResourceStack extends BaseStack {
     cdk.Tags.of(this.mcBucket).add('Project', AppContext.getInstance().appName);
     cdk.Tags.of(this.mcBucket).add('DeployEnvironment', AppContext.getInstance().env);
     cdk.Tags.of(this.mcBucket).add('Name', `encsys-bucket-${buckename}`);
+  }
+
+  private createRDSAuroraServerless(vpc: ec2.Vpc, env: string)
+  : rds.ServerlessCluster 
+  {
+    // ParameterGroup creation
+    const pg = new rds.ParameterGroup(
+      this, 'RdsParamGroup', {
+        description: `Custom Parameter Group for media-convert-db-${env}`,
+        engine: rds.DatabaseClusterEngine.auroraMysql({ 
+          version: rds.AuroraMysqlEngineVersion.VER_5_7_12 
+        }),
+        parameters: {
+          lc_time_names: "ko_KR",
+          time_zone: "Asia/Seoul",
+          lower_case_table_names: "1",
+          innodb_file_per_table: "1",
+          character_set_server: "utf8mb4",
+          collation_server: "utf8mb4_unicode_ci",
+        }
+      }
+    );
+
+    // SecurityGroup creation
+    const sg = this.createRdsSg(vpc, env);
+
+    const cluster = new rds.ServerlessCluster(this, 'RdsServerlessCluster', {
+      engine: rds.DatabaseClusterEngine.auroraMysql({ 
+        version: rds.AuroraMysqlEngineVersion.VER_5_7_12 
+      }),
+      vpc,
+      credentials: rds.Credentials.fromGeneratedSecret('mysqladmin', { // use secret manager for RDS credentials
+        secretName: `/${AppContext.getInstance().appName}/${AppContext.getInstance().env}/media-db-info`
+      }),
+      scaling: {
+        autoPause: cdk.Duration.minutes(0),
+        minCapacity: rds.AuroraCapacityUnit.ACU_1,
+        maxCapacity: rds.AuroraCapacityUnit.ACU_8,
+      },
+      clusterIdentifier: `media-convert-db-${env}`,
+      parameterGroup: pg,
+      securityGroups: [sg],
+      vpcSubnets: vpc.selectSubnets({
+        subnetType: ec2.SubnetType.PRIVATE
+      }),
+      removalPolicy: cdk.RemovalPolicy.DESTROY
+    });
+    
+    // auto-tagging for cluster
+    cdk.Tags.of(cluster).add('map-migrated', 'd-server-00wkp68bblxi7u');
+    cdk.Tags.of(cluster).add('Project', AppContext.getInstance().appName);
+    cdk.Tags.of(cluster).add('DeployEnvironment', AppContext.getInstance().env);
+    cdk.Tags.of(cluster).add('Name', `encsys-${env}`);
+
+    return cluster;
+  }
+
+  private createRdsSg(vpc: ec2.Vpc, env: string): ec2.SecurityGroup {
+    const sg = new ec2.SecurityGroup(this, 'RdsSecurityGroup', {
+      vpc,
+      description: `SG for media-convert-db-${env}`,
+      allowAllOutbound: true,
+      securityGroupName: `media-convert-db-${env}`,
+    });
+
+    // inbound rule to connect RDS with 3306 port for same vpc
+    sg.addIngressRule(
+      ec2.Peer.ipv4(vpc.vpcCidrBlock), 
+      ec2.Port.tcp(3306), 
+    );
+    return sg
   }
 }
