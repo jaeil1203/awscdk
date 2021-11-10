@@ -47,6 +47,9 @@ export class ResourceStack extends BaseStack {
 
     // rds serverless cluster creation
     this.createRDSAuroraServerless(vpc, env);
+
+    // create a bastion host
+    this.createEc2Instance(vpc, env)
   }
 
   private createMediaBucket(stackName: string, buckename: string, ver: boolean, env: string)
@@ -135,5 +138,91 @@ export class ResourceStack extends BaseStack {
       ec2.Port.tcp(3306), 
     );
     return sg
+  }
+
+  private AddInboudRule(sg: ec2.SecurityGroup, ipv4: string, description: string) {
+    sg.addIngressRule(ec2.Peer.ipv4(ipv4), ec2.Port.tcp(80), description);
+    sg.addIngressRule(ec2.Peer.ipv4(ipv4), ec2.Port.tcp(443), description);
+    sg.addIngressRule(ec2.Peer.ipv4(ipv4), ec2.Port.tcp(22), description);
+  }
+
+  private createEc2Sg(vpc: ec2.IVpc, env: string): ec2.SecurityGroup {
+    const sg = new ec2.SecurityGroup(this, 'AgentSecurityGroup', {
+      vpc,
+      description: `SG for cudo-agent-${env}`,
+      securityGroupName: `cudo-agent-sg-${env}`,
+    });
+
+    // add IPs to inbond rule 
+    this.AddInboudRule(sg, "1.224.3.174/32", "from SKT")
+    
+    return sg
+  }
+
+  private createInstanceRole(env: string, appName: string) {
+    const roleName = `CudoAgentInstanceRole-${env}`
+    const account = cdk.Stack.of(this).account
+    const region = cdk.Stack.of(this).region
+    const instanceRole = new iam.Role(this, 'InstanceRole', {
+      assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
+      roleName: roleName,
+      managedPolicies: [
+        iam.ManagedPolicy.fromManagedPolicyArn(this, 'CloudWatchFullAccess', 'arn:aws:iam::aws:policy/CloudWatchFullAccess'),
+        iam.ManagedPolicy.fromManagedPolicyArn(this, 'EC2InstanceProfileForImageBuilderECRContainerBuilds', 'arn:aws:iam::aws:policy/EC2InstanceProfileForImageBuilderECRContainerBuilds'),
+        iam.ManagedPolicy.fromManagedPolicyArn(this, 'AmazonSSMManagedInstanceCore', 'arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore')
+      ]
+    });
+
+    const policyParamStoreReadOnlyAccess = new iam.Policy(this, 'AWSParamStoreReadOnlyAccess', {
+      statements: [
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: [
+            'ssm:GetParameters',
+            'ssm:GetParameter'
+          ],
+          resources: [`arn:aws:ssm:${region}:${account}:parameter/${appName}/${env}/*`]
+        })
+      ]
+    })
+
+    const policySecretsManagerReadOnlyAccess = new iam.Policy(this, 'AWSSecretsManagerReadOnlyAccess', {
+      statements: [
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: [            
+            "secretsmanager:GetSecretValue"            
+          ],
+          resources: [`arn:aws:secretsmanager:${region}:${account}:secret:/${appName}/${env}/*`]
+        })
+      ]
+    })
+
+    instanceRole.attachInlinePolicy(policyParamStoreReadOnlyAccess)
+    instanceRole.attachInlinePolicy(policySecretsManagerReadOnlyAccess)
+
+    return instanceRole;
+  }
+  private createEc2Instance(vpc: ec2.IVpc, env: string) {
+    const appName = AppContext.getInstance().appName;
+
+    const ec_instance = new ec2.Instance(this, 'AgentEc2Instance', {
+      vpc,
+      vpcSubnets: vpc.selectSubnets({
+        subnetType: ec2.SubnetType.PUBLIC
+      }),
+      keyName: env_const.keypair,
+      instanceType: new ec2.InstanceType('t3.small'),
+      machineImage: new ec2.AmazonLinuxImage,
+      //machineImage: new ec2.WindowsImage(ec2.WindowsVersion.WINDOWS_SERVER_2019_KOREAN_FULL_BASE, {}), // set windows 2019 AMI with Korean
+      securityGroup: this.createEc2Sg(vpc, env),
+      role: this.createInstanceRole(env, appName)
+    });
+
+    // auto-tagging for ec2 instance
+    cdk.Tags.of(ec_instance).add('map-migrated', 'd-server-00wkp68bblxi7u');
+    cdk.Tags.of(ec_instance).add('Project', AppContext.getInstance().appName);
+    cdk.Tags.of(ec_instance).add('DeployEnvironment', AppContext.getInstance().env);
+    cdk.Tags.of(ec_instance).add('Name', `encsys-Agentcudotemp-instance`);
   }
 }

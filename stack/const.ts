@@ -19,3 +19,4 @@ if (env != 'dev') {
 } 
 
 export const devvpc = vpc
+export const keypair = 'test-prd'
