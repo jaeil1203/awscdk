@@ -74,6 +74,12 @@ export class VpcStack extends BaseStack {
       this.createInterfaceEndpoint(interfaceVpceServices[i]);
     }
     */
+   
+    // print out EIP address
+    /*this.vpc.publicSubnets.forEach((subnet, index) => {
+      const EIP = subnet.node.tryFindChild('EIP') as ec2.CfnEIP
+      new cdk.CfnOutput(this, `output-eip-${index}`, { value: EIP.ref});
+    }) */
 
     // auto-tagging in vpc    
     cdk.Tags.of(this.vpc).add('map-migrated', 'd-server-xxxxxxxxxxx');  // for MAP
