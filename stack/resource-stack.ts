@@ -63,7 +63,7 @@ export class ResourceStack extends BaseStack {
     });
 
     // auto-tagging for s3
-    cdk.Tags.of(this.mcBucket).add('map-migrated', 'd-server-00wkp68bblxi7u');
+    cdk.Tags.of(this.mcBucket).add('map-migrated', 'd-server-xxxxxxxxxxx');
     cdk.Tags.of(this.mcBucket).add('Project', AppContext.getInstance().appName);
     cdk.Tags.of(this.mcBucket).add('DeployEnvironment', AppContext.getInstance().env);
     cdk.Tags.of(this.mcBucket).add('Name', `encsys-bucket-${buckename}`);
@@ -75,7 +75,7 @@ export class ResourceStack extends BaseStack {
     // ParameterGroup creation
     const pg = new rds.ParameterGroup(
       this, 'RdsParamGroup', {
-        description: `Custom Parameter Group for media-convert-db-${env}`,
+        description: `Custom Parameter Group for media-db-${env}`,
         engine: rds.DatabaseClusterEngine.auroraMysql({ 
           version: rds.AuroraMysqlEngineVersion.VER_5_7_12 
         }),
@@ -106,7 +106,7 @@ export class ResourceStack extends BaseStack {
         minCapacity: rds.AuroraCapacityUnit.ACU_1,
         maxCapacity: rds.AuroraCapacityUnit.ACU_8,
       },
-      clusterIdentifier: `media-convert-db-${env}`,
+      clusterIdentifier: `media-db-${env}`,
       parameterGroup: pg,
       securityGroups: [sg],
       vpcSubnets: vpc.selectSubnets({
@@ -116,7 +116,7 @@ export class ResourceStack extends BaseStack {
     });
     
     // auto-tagging for cluster
-    cdk.Tags.of(cluster).add('map-migrated', 'd-server-00wkp68bblxi7u');
+    cdk.Tags.of(cluster).add('map-migrated', 'd-server-xxxxxxxxxxxx');
     cdk.Tags.of(cluster).add('Project', AppContext.getInstance().appName);
     cdk.Tags.of(cluster).add('DeployEnvironment', AppContext.getInstance().env);
     cdk.Tags.of(cluster).add('Name', `encsys-${env}`);
@@ -127,9 +127,9 @@ export class ResourceStack extends BaseStack {
   private createRdsSg(vpc: ec2.Vpc, env: string): ec2.SecurityGroup {
     const sg = new ec2.SecurityGroup(this, 'RdsSecurityGroup', {
       vpc,
-      description: `SG for media-convert-db-${env}`,
+      description: `SG for media-db-${env}`,
       allowAllOutbound: true,
-      securityGroupName: `media-convert-db-${env}`,
+      securityGroupName: `media-db-${env}`,
     });
 
     // inbound rule to connect RDS with 3306 port for same vpc
@@ -154,7 +154,7 @@ export class ResourceStack extends BaseStack {
     });
 
     // add IPs to inbond rule 
-    this.AddInboudRule(sg, "1.224.3.174/32", "from SKT")
+    this.AddInboudRule(sg, "xxx.xxx.xxx.xxx/32", "from home")
     
     return sg
   }
@@ -220,7 +220,7 @@ export class ResourceStack extends BaseStack {
     });
 
     // auto-tagging for ec2 instance
-    cdk.Tags.of(ec_instance).add('map-migrated', 'd-server-00wkp68bblxi7u');
+    cdk.Tags.of(ec_instance).add('map-migrated', 'd-server-xxxxxxxxxx'); // add a MAP tag
     cdk.Tags.of(ec_instance).add('Project', AppContext.getInstance().appName);
     cdk.Tags.of(ec_instance).add('DeployEnvironment', AppContext.getInstance().env);
     cdk.Tags.of(ec_instance).add('Name', `encsys-Agentcudotemp-instance`);
