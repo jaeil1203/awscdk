@@ -76,7 +76,7 @@ export class VpcStack extends BaseStack {
     */
 
     // auto-tagging in vpc    
-    cdk.Tags.of(this.vpc).add('map-migrated', 'd-server-xxxxxxxxxxx');
+    cdk.Tags.of(this.vpc).add('map-migrated', 'd-server-xxxxxxxxxxx');  // for MAP
     cdk.Tags.of(this.vpc).add('Project', AppContext.getInstance().appName);
     cdk.Tags.of(this.vpc).add('DeployEnvironment', AppContext.getInstance().env);
     cdk.Tags.of(this.vpc).add('Name', `vpc-${AppContext.getInstance().appName}-${AppContext.getInstance().env}`);
