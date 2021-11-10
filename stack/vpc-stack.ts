@@ -19,6 +19,7 @@
 import * as cdk from '@aws-cdk/core';
 import * as ec2 from "@aws-cdk/aws-ec2";
 import { BaseStack } from '../lib/base-stack';
+import { AppContext } from '../lib/app-context';
 import * as env_const from './const'
 
 export class VpcStack extends BaseStack {
@@ -55,5 +56,10 @@ export class VpcStack extends BaseStack {
       },
     });
 
+    // auto-tagging in vpc    
+    cdk.Tags.of(this.vpc).add('map-migrated', 'd-server-00wkp68bblxi7u');
+    cdk.Tags.of(this.vpc).add('Project', AppContext.getInstance().appName);
+    cdk.Tags.of(this.vpc).add('DeployEnvironment', AppContext.getInstance().env);
+    cdk.Tags.of(this.vpc).add('Name', `vpc-${AppContext.getInstance().appName}-${AppContext.getInstance().env}`);
   }
 }
