@@ -56,10 +56,38 @@ export class VpcStack extends BaseStack {
       },
     });
 
+    /*
+    // VPC Endpoint Creation for InterfaceEndpoints
+    // (RDS, SecretsManager, ECR, Cloudwatch logs, KMS, SSM)
+    let interfaceVpceServices = [
+      ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS,
+      ec2.InterfaceVpcEndpointAwsService.ECR,
+      ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER,
+      ec2.InterfaceVpcEndpointAwsService.KMS, // Key Management Service
+      ec2.InterfaceVpcEndpointAwsService.RDS,
+      ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
+      ec2.InterfaceVpcEndpointAwsService.STS, // Security Token Store
+      ec2.InterfaceVpcEndpointAwsService.SSM, // System Manager including parameter store
+    ];
+
+    for (var i in interfaceVpceServices){
+      this.createInterfaceEndpoint(interfaceVpceServices[i]);
+    }
+    */
+
     // auto-tagging in vpc    
     cdk.Tags.of(this.vpc).add('map-migrated', 'd-server-00wkp68bblxi7u');
     cdk.Tags.of(this.vpc).add('Project', AppContext.getInstance().appName);
     cdk.Tags.of(this.vpc).add('DeployEnvironment', AppContext.getInstance().env);
     cdk.Tags.of(this.vpc).add('Name', `vpc-${AppContext.getInstance().appName}-${AppContext.getInstance().env}`);
+
   }
+  
+  private createInterfaceEndpoint(service: ec2.InterfaceVpcEndpointAwsService) {
+    const serviceName = service.name.split('.').pop();
+    this.vpc.addInterfaceEndpoint(`VPCE-${serviceName}`, { // connect to interface endpoint for the vpc
+      service: service,
+    });
+  }
+
 }
