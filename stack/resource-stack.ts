@@ -40,10 +40,6 @@ export class ResourceStack extends BaseStack {
 
     // create S3 buckets such as input/temp/output/error/system-settings
     this.createMediaBucket(`SKBEncodingSysBucketInput`, `input`, false, env)
-    this.createMediaBucket(`SKBEncodingSysBucketTemp`, `temp`, false, env)
-    this.createMediaBucket(`SKBEncodingSysBucketOutput`, `output`, false, env)
-    this.createMediaBucket(`SKBEncodingSysBucketError`, `error`, false, env)
-    this.createMediaBucket(`SKBEncodingSysBucketSystemSetting`, `system-settings`, true, env) // versioned s3
 
     // rds serverless cluster creation
     this.createRDSAuroraServerless(vpc, env);
