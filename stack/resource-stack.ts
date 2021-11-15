@@ -219,6 +219,5 @@ export class ResourceStack extends BaseStack {
     cdk.Tags.of(ec_instance).add('map-migrated', 'd-server-xxxxxxxxxx'); // add a MAP tag
     cdk.Tags.of(ec_instance).add('Project', AppContext.getInstance().appName);
     cdk.Tags.of(ec_instance).add('DeployEnvironment', AppContext.getInstance().env);
-    cdk.Tags.of(ec_instance).add('Name', `encsys-Agentcudotemp-instance`);
   }
 }
