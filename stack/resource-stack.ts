@@ -24,6 +24,7 @@ import * as iam from '@aws-cdk/aws-iam';
 import * as env_const from './const'
 import { BaseStack } from '../lib/base-stack';
 import { AppContext } from '../lib/app-context';
+import { BlockDeviceVolume } from '@aws-cdk/aws-ec2';
 
 interface ResourceStackProps extends cdk.StackProps {
   vpc: ec2.Vpc;
@@ -48,7 +49,7 @@ export class ResourceStack extends BaseStack {
     this.createEc2Instance(vpc, env)
 
     // create a EC2 from default VPC
-    this.createEc2InstancefromDefaultvpc('default')
+    //this.createEc2InstancefromDefaultvpc('default')
   }
 
   private createMediaBucket(stackName: string, buckename: string, ver: boolean, env: string)
@@ -215,7 +216,13 @@ export class ResourceStack extends BaseStack {
       machineImage: new ec2.AmazonLinuxImage,
       //machineImage: new ec2.WindowsImage(ec2.WindowsVersion.WINDOWS_SERVER_2019_KOREAN_FULL_BASE, {}), // set windows 2019 AMI with Korean
       securityGroup: this.createEc2Sg(vpc, env),
-      role: this.createInstanceRole(env, appName)
+      role: this.createInstanceRole(env, appName),
+      blockDevices: [
+        {
+          deviceName: '/dev/sda1',
+          volume: ec2.BlockDeviceVolume.ebs(100),
+        }
+      ]
     });
 
     // auto-tagging for ec2 instance
