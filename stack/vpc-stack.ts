@@ -35,6 +35,7 @@ export class VpcStack extends BaseStack {
     super(scope, id, props);
 
     // vpc creation
+    // https://docs.aws.amazon.com/cdk/api/latest/docs/aws-ec2-readme.html
     this.vpc = new ec2.Vpc(this, 'Vpc' ,{
       cidr: env_const.devvpc.CIRD,
       subnetConfiguration: [
