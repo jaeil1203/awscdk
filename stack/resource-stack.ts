@@ -221,7 +221,11 @@ export class ResourceStack extends BaseStack {
         {
           deviceName: '/dev/sda1',
           volume: ec2.BlockDeviceVolume.ebs(100),
-        }
+        },/*
+        {
+          deviceName: '/dev/sdm',
+          volume: ec2.BlockDeviceVolume.ebs(100),
+        },*/
       ]
     });
 
