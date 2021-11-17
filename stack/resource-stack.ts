@@ -39,13 +39,16 @@ export class ResourceStack extends BaseStack {
     const vpc = props.vpc;
 
     // create S3 buckets such as input/temp/output/error/system-settings
-    this.createMediaBucket(`SKBEncodingSysBucketInput`, `input`, false, env)
+    //this.createMediaBucket(`SKBEncodingSysBucketInput`, `input`, false, env)
 
     // rds serverless cluster creation
-    this.createRDSAuroraServerless(vpc, env);
+    //this.createRDSAuroraServerless(vpc, env);
 
     // create a bastion host
     this.createEc2Instance(vpc, env)
+
+    // create a EC2 from default VPC
+    this.createEc2InstancefromDefaultvpc('default')
   }
 
   private createMediaBucket(stackName: string, buckename: string, ver: boolean, env: string)
@@ -150,7 +153,7 @@ export class ResourceStack extends BaseStack {
     });
 
     // add IPs to inbond rule 
-    this.AddInboudRule(sg, "xxx.xxx.xxx.xxx/32", "from home")
+    this.AddInboudRule(sg, "1.224.3.174/32", "from SKT")
     
     return sg
   }
@@ -201,6 +204,37 @@ export class ResourceStack extends BaseStack {
   }
   private createEc2Instance(vpc: ec2.IVpc, env: string) {
     const appName = AppContext.getInstance().appName;
+
+    const ec_instance = new ec2.Instance(this, 'AgentEc2Instance', {
+      vpc,
+      vpcSubnets: vpc.selectSubnets({
+        subnetType: ec2.SubnetType.PUBLIC
+      }),
+      keyName: env_const.keypair,
+      instanceType: new ec2.InstanceType('t3.small'),
+      machineImage: new ec2.AmazonLinuxImage,
+      //machineImage: new ec2.WindowsImage(ec2.WindowsVersion.WINDOWS_SERVER_2019_KOREAN_FULL_BASE, {}), // set windows 2019 AMI with Korean
+      securityGroup: this.createEc2Sg(vpc, env),
+      role: this.createInstanceRole(env, appName)
+    });
+
+    // auto-tagging for ec2 instance
+    cdk.Tags.of(ec_instance).add('map-migrated', 'd-server-xxxxxxxxxx'); // add a MAP tag
+    cdk.Tags.of(ec_instance).add('Project', AppContext.getInstance().appName);
+    cdk.Tags.of(ec_instance).add('DeployEnvironment', AppContext.getInstance().env);
+  }
+  private createEc2InstancefromDefaultvpc(env: string) {
+    const appName = AppContext.getInstance().appName;
+    const vpc = ec2.Vpc.fromVpcAttributes(this, 'VPC', {
+      vpcId: 'vpc-1234',
+      availabilityZones: ['us-east-1a', 'us-east-1b'],
+    
+      // Either pass literals for all IDs
+      publicSubnetIds: ['s-12345', 's-67890'],
+    
+      // OR: import a list of known length
+      privateSubnetIds: ['s-12345', 's-67890'],
+    });
 
     const ec_instance = new ec2.Instance(this, 'AgentEc2Instance', {
       vpc,
