@@ -147,7 +147,7 @@ export class ResourceStack extends BaseStack {
   }
 
   private createEc2Sg(vpc: ec2.IVpc, env: string): ec2.SecurityGroup {
-    const sg = new ec2.SecurityGroup(this, 'AgentSecurityGroup', {
+    const sg = new ec2.SecurityGroup(this, 'SecurityGroup', {
       vpc,
       description: `SG for cudo-agent-${env}`,
       securityGroupName: `cudo-agent-sg-${env}`,
@@ -160,7 +160,7 @@ export class ResourceStack extends BaseStack {
   }
 
   private createInstanceRole(env: string, appName: string) {
-    const roleName = `CudoAgentInstanceRole-${env}`
+    const roleName = `InstanceRole-${env}`
     const account = cdk.Stack.of(this).account
     const region = cdk.Stack.of(this).region
     const instanceRole = new iam.Role(this, 'InstanceRole', {
@@ -206,7 +206,7 @@ export class ResourceStack extends BaseStack {
   private createEc2Instance(vpc: ec2.IVpc, env: string) {
     const appName = AppContext.getInstance().appName;
 
-    const ec_instance = new ec2.Instance(this, 'AgentEc2Instance', {
+    const ec_instance = new ec2.Instance(this, 'Ec2Instance', {
       vpc,
       vpcSubnets: vpc.selectSubnets({
         subnetType: ec2.SubnetType.PUBLIC
