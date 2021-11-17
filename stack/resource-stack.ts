@@ -153,7 +153,7 @@ export class ResourceStack extends BaseStack {
     });
 
     // add IPs to inbond rule 
-    this.AddInboudRule(sg, "1.224.3.174/32", "from SKT")
+    this.AddInboudRule(sg, "xxxxxxxxxxxxxxx/32", "from SKT")
     
     return sg
   }
