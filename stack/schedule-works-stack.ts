@@ -70,10 +70,12 @@ export class ScheduleWorksHandleStack extends BaseStack {
       })],
       */
       role : lambdaRole,
+      /*
       environment: {
         ENV: 'dev',
         APP_NAME: AppContext.getInstance().appName,
       },
+      */
     });
     
     // add cloudwatch rule    
