@@ -41,8 +41,8 @@ export class BatchStack extends BaseStack{
     // create EC2-based compute environment, job definition and job que for batch process
     //this.createbatches(props, batchServiceRole, instanceProfile);
     this.createbatch(props, batchServiceRole, instanceProfile, 
-      "inspector",  // ECR repository
-      "Inspector",  // prefix
+      "test-copys3",  // ECR repository
+      "CopyS3",  // prefix
       "",           // post fix
       env_const.batch_ec2.minCPUs, 
       env_const.batch_ec2.maxCPUs, 
@@ -59,8 +59,8 @@ export class BatchStack extends BaseStack{
     
     // create fargate-based batch  compute environment, job definition and job que for batch process(encoder)
      this.createbatchFargate(props, batchServiceRole, FargateinstanceRole, 
-      "encoder4audio", // ECR repository
-      "Encoder4Audio", // prefix
+      "test-copys3", // ECR repository
+      "CopyS3", // prefix
       env_const.batch_fargate_spot.maxCPUs, 
       env_const.batch_fargate_spot.container_vCPUs, 
       env_const.batch_fargate_spot.container_memory,
@@ -86,7 +86,7 @@ export class BatchStack extends BaseStack{
     const JobQueue = this.createJobQueue(computeEnvironment, prefix, comput_order, batch_order);
     const JobDef = this.createJobDefinition(EcrRepository, prefix, Container_vcpu, Container_memory);
 
-    this.putParameter(`Batch${prefix}`, JSON.stringify({
+    this.putParameter(`Batch${prefix}-EC2`, JSON.stringify({
       jobQueueName: JobQueue.jobQueueName,
       jobDefinitionName: JobDef.jobDefinitionName
     }), env);
@@ -241,7 +241,8 @@ export class BatchStack extends BaseStack{
         vcpus: vcpus,               // the number of vCPUs
         memoryLimitMiB: memorylimit,// memory(MiB)
         environment: {
-          'AWS_S3_BUCKET': 'override_required',
+            'source': 'skb-media-prod-input',
+            'destination': 'skb-origin-backup',
         },
         privileged: true, // When this parameter is true, the container is given elevated privileges
                           // on the host container instance (similar to the root user).
@@ -276,7 +277,7 @@ export class BatchStack extends BaseStack{
     const encoderJobQueue = this.createJobQueueFargate(computeEnvironmentEncoder, name, comput_order, batch_order);
     const encoderJob = this.createJobDefinitionFargate(encoderEcrRepository, instanceRole, name, Container_vcpu, Container_memory)
 
-    this.putParameter(`Batch${name}`, JSON.stringify({
+    this.putParameter(`Batch${name}-FGS`, JSON.stringify({
       jobQueueName: encoderJobQueue.jobQueueName,
       jobDefinitionName: encoderJob.jobDefinitionName
     }), env);
@@ -377,7 +378,8 @@ export class BatchStack extends BaseStack{
           }
         },            
         environment: [
-          {name: 'AWS_S3_BUCKET', value: 'override_required'},
+            {name: 'source', value: 'skb-media-prod-input'},
+            {name: 'destination', value: 'skb-origin-backup'},
         ],   
       },
       jobDefinitionName: `JD-${env}-${tags}-FGS`,
