@@ -3,8 +3,8 @@ import os
 import boto3
 
 def lambda_handler(event, context):
-    url = 'http://' + host + '/test'
+    url = 'test'
     
     print(url)
 
-    return code
+    #return code
