@@ -61,12 +61,14 @@ export class AgentScheduleWorksHandleStack extends BaseStack {
       vpc: vpc,
       vpcSubnets: vpc.selectSubnets({
         subnetType: ec2.SubnetType.PRIVATE
-      }),      
+      }),  
+      /*    
       layers: [
         lambda.LayerVersion.fromLayerVersionAttributes(this, `TestLayer${postfix}`, {
           layerVersionArn: `arn:aws:lambda:ap-northeast-2:${this.account}:layer:ffmpeg:2`,
           compatibleRuntimes: [lambda.Runtime.PYTHON_3_6],
       })],
+      */
       role : lambdaRole,
       environment: {
         ENV: 'dev',
