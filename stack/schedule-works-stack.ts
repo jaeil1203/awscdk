@@ -29,7 +29,7 @@ interface StackProps extends cdk.StackProps {
     vpc: ec2.IVpc
 }
   
-export class AgentScheduleWorksHandleStack extends BaseStack {
+export class ScheduleWorksHandleStack extends BaseStack {
   
   constructor(scope: cdk.Construct, id: string, props: StackProps) {
     super(scope, id, props);
