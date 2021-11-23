@@ -46,7 +46,7 @@ export class ScheduleWorksHandleStack extends BaseStack {
       ]
     });
 
-    this.createLambdaFunction(props.vpc, lambdaRole,"awsBatchPolling", '0/5', "*")
+    this.createLambdaFunction(props.vpc, lambdaRole,"awsBatchPolling", '0/1', "*")
   }
   	
   private createLambdaFunction(vpc: ec2.IVpc, lambdaRole: iam.Role, postfix: string, Minutes: string, Hours: string)
