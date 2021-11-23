@@ -25,6 +25,7 @@ import * as env_const from './const'
 import { BaseStack } from '../lib/base-stack';
 import { AppContext } from '../lib/app-context';
 import { BlockDeviceVolume } from '@aws-cdk/aws-ec2';
+import { Aws } from '@aws-cdk/core';
 
 interface ResourceStackProps extends cdk.StackProps {
   vpc: ec2.Vpc;
@@ -39,28 +40,81 @@ export class ResourceStack extends BaseStack {
     const env = AppContext.getInstance().env;
     const vpc = props.vpc;
 
-    // create S3 buckets such as input/temp/output/error/system-settings
-    //this.createMediaBucket(`SKBEncodingSysBucketInput`, `input`, false, env)
+    // create S3 buckets such as input
+    this.createMediaBucket(`EncodingSystem`, `input`, false, false)
 
     // rds serverless cluster creation
-    //this.createRDSAuroraServerless(vpc, env);
+    this.createRDSAuroraServerless(vpc, env);
 
     // create a bastion host
     this.createEc2Instance(vpc, env)
 
-    // create a EC2 from default VPC
-    //this.createEc2InstancefromDefaultvpc('default')
   }
 
-  private createMediaBucket(stackName: string, buckename: string, ver: boolean, env: string)
-  {
+  private createMediaBucket(stackName: string, buckename: string, ver: boolean, keyEnabled: boolean)
+  {    
+    const env = AppContext.getInstance().env;    
+    const account = cdk.Stack.of(this).account;
+    const region = cdk.Stack.of(this).region;
+    const appName = AppContext.getInstance().appName;
+
     // s3 bucket creation
     this.mcBucket = new s3.Bucket(this, `${stackName}${env}`, {
       bucketName: `${AppContext.getInstance().appName}-${env}-${buckename}`,
       removalPolicy: cdk.RemovalPolicy.DESTROY, 
       versioned: ver, // manage to version s3 data
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,  
+      bucketKeyEnabled: keyEnabled,
+      lifecycleRules: [
+        {
+          //https://docs.aws.amazon.com/cdk/api/latest/docs/@aws-cdk_aws-s3.LifecycleRule.html
+          abortIncompleteMultipartUploadAfter: cdk.Duration.days(1),
+          enabled: true,
+          //expiration: cdk.Duration.days(30),
+          //expirationDate: new Date('2021-12-01'),
+          //expiredObjectDeleteMarker: false,
+          id: 's3-LifecycleRule',
+          //noncurrentVersionExpiration: cdk.Duration.days(7),
+          /*
+          noncurrentVersionTransitions: [{
+            storageClass: s3.StorageClass.GLACIER,
+            transitionAfter: cdk.Duration.minutes(30),
+          }],
+          prefix: 'prefix',
+          tagFilters: {
+            tagFiltersKey: tagFilters,
+          },*/
+          
+          transitions: [{
+            //storageClass: s3.StorageClass.INTELLIGENT_TIERING,
+            storageClass: s3.StorageClass.GLACIER,
+        
+            // the properties below are optional
+            transitionAfter: cdk.Duration.days(1),
+            //transitionDate: new Date(),
+          }],
+        }
+      ],
     });
+
+    const s3policy = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      principals: [
+        new iam.ArnPrincipal(`arn:aws:iam::${account}:user/jaeilkim`),
+        new iam.ArnPrincipal(`arn:aws:iam::${account}:user/moonjmee`),     
+      ],
+      actions: [            
+        "s3:ListBucket",
+        "s3:GetObject",
+        "s3:GetObjectTagging"       
+      ],
+      resources: [
+        `arn:aws:s3:::${AppContext.getInstance().appName}-${env}-${buckename}/*`,
+        `arn:aws:s3:::${AppContext.getInstance().appName}-${env}-${buckename}`
+      ]
+    })
+
+    this.mcBucket.addToResourcePolicy(s3policy)
 
     // auto-tagging for s3
     cdk.Tags.of(this.mcBucket).add('map-migrated', 'd-server-xxxxxxxxxxx');
@@ -154,7 +208,7 @@ export class ResourceStack extends BaseStack {
     });
 
     // add IPs to inbond rule 
-    this.AddInboudRule(sg, "xxxxxxxxxxxxxxx/32", "from SKT")
+    this.AddInboudRule(sg, "1.224.3.174/32", "from SKT")
     
     return sg
   }
@@ -212,7 +266,7 @@ export class ResourceStack extends BaseStack {
         subnetType: ec2.SubnetType.PUBLIC
       }),
       keyName: env_const.keypair,
-      instanceType: new ec2.InstanceType('t3.small'),
+      instanceType: new ec2.InstanceType('c5.xlarge'),
       machineImage: new ec2.AmazonLinuxImage,
       //machineImage: new ec2.WindowsImage(ec2.WindowsVersion.WINDOWS_SERVER_2019_KOREAN_FULL_BASE, {}), // set windows 2019 AMI with Korean
       securityGroup: this.createEc2Sg(vpc, env),
@@ -227,37 +281,6 @@ export class ResourceStack extends BaseStack {
           volume: ec2.BlockDeviceVolume.ebs(100),
         },*/
       ]
-    });
-
-    // auto-tagging for ec2 instance
-    cdk.Tags.of(ec_instance).add('map-migrated', 'd-server-xxxxxxxxxx'); // add a MAP tag
-    cdk.Tags.of(ec_instance).add('Project', AppContext.getInstance().appName);
-    cdk.Tags.of(ec_instance).add('DeployEnvironment', AppContext.getInstance().env);
-  }
-  private createEc2InstancefromDefaultvpc(env: string) {
-    const appName = AppContext.getInstance().appName;
-    const vpc = ec2.Vpc.fromVpcAttributes(this, 'VPC', {
-      vpcId: 'vpc-1234',
-      availabilityZones: ['us-east-1a', 'us-east-1b'],
-    
-      // Either pass literals for all IDs
-      publicSubnetIds: ['s-12345', 's-67890'],
-    
-      // OR: import a list of known length
-      privateSubnetIds: ['s-12345', 's-67890'],
-    });
-
-    const ec_instance = new ec2.Instance(this, 'AgentEc2Instance', {
-      vpc,
-      vpcSubnets: vpc.selectSubnets({
-        subnetType: ec2.SubnetType.PUBLIC
-      }),
-      keyName: env_const.keypair,
-      instanceType: new ec2.InstanceType('t3.small'),
-      machineImage: new ec2.AmazonLinuxImage,
-      //machineImage: new ec2.WindowsImage(ec2.WindowsVersion.WINDOWS_SERVER_2019_KOREAN_FULL_BASE, {}), // set windows 2019 AMI with Korean
-      securityGroup: this.createEc2Sg(vpc, env),
-      role: this.createInstanceRole(env, appName)
     });
 
     // auto-tagging for ec2 instance
