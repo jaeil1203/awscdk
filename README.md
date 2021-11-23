@@ -1,8 +1,18 @@
-# Welcome to your CDK TypeScript project!
+# The cloud-based test system for AWS IaC
 
-This is a blank project for TypeScript development with CDK.
+This is a project for TypeScript development with CDK.
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
+
+## How to deploy stack
+```bash
+# deploy all stacks to 'dev'
+$ cdk deploy '*' -c env=dev
+$ cdk deploy VpcStackdev-test -c env=dev-test
+
+# deploy specific stack to 'prod'
+$ cdk deploy VpcStackprod -c env=prod
+```
 
 ## Useful commands
 
