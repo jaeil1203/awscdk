@@ -21,11 +21,11 @@ import * as ec2 from "@aws-cdk/aws-ec2";
 import * as s3 from "@aws-cdk/aws-s3";
 import * as rds from '@aws-cdk/aws-rds';
 import * as iam from '@aws-cdk/aws-iam';
+import * as lambda from '@aws-cdk/aws-lambda';
 import * as env_const from './const'
+import { S3EventSource } from '@aws-cdk/aws-lambda-event-sources';
 import { BaseStack } from '../lib/base-stack';
 import { AppContext } from '../lib/app-context';
-import { BlockDeviceVolume } from '@aws-cdk/aws-ec2';
-import { Aws } from '@aws-cdk/core';
 
 interface ResourceStackProps extends cdk.StackProps {
   vpc: ec2.Vpc;
@@ -42,6 +42,8 @@ export class ResourceStack extends BaseStack {
 
     // create S3 buckets such as input
     this.createMediaBucket(`EncodingSystem`, `input`, false, false)
+
+
 
     // rds serverless cluster creation
     this.createRDSAuroraServerless(vpc, env);
@@ -121,6 +123,45 @@ export class ResourceStack extends BaseStack {
     cdk.Tags.of(this.mcBucket).add('Project', AppContext.getInstance().appName);
     cdk.Tags.of(this.mcBucket).add('DeployEnvironment', AppContext.getInstance().env);
     cdk.Tags.of(this.mcBucket).add('Name', `encsys-bucket-${buckename}`);
+  }
+
+  private createTrigggerfromS3(vpc: ec2.Vpc)
+  {    
+    const env = AppContext.getInstance().env;    
+    const account = cdk.Stack.of(this).account;
+    const region = cdk.Stack.of(this).region;
+    const appName = AppContext.getInstance().appName;
+
+    
+    // add lambda
+    const TriggerHanlderIn = new lambda.Function(this, 'JobTriggerHandlerIn', {
+      code: lambda.Code.fromAsset('lambda/job_trigger_handler'), 
+      handler: 'handler_jobtrigger.lambda_handler', // The name of the method within your code 
+                                                    // that Lambda calls to execute your function.
+      runtime: lambda.Runtime.PYTHON_3_7, // Python
+      vpc: vpc,
+      functionName: `trigger-in-${env}`,  
+      vpcSubnets: vpc.selectSubnets({
+        subnetType: ec2.SubnetType.PRIVATE  // private subnet
+      }),
+      timeout: cdk.Duration.minutes(15),  // The function execution time (in seconds) 
+                                      // after which Lambda terminates the function.
+                                      // default: 3 seconds
+      environment: {
+        APP_NAME: appName,
+      },
+    });
+
+    TriggerHanlderIn.addEventSource(new S3EventSource(this.mcBucket, { // s3 bucket
+      events: [s3.EventType.OBJECT_CREATED],
+      filters: [ {suffix : '.ts'} ] // file format should be limited for safety 
+    })); // can find it in lambda function --> configuration --> Triggers
+
+
+    // auto-tagging for s3
+    cdk.Tags.of(this.mcBucket).add('map-migrated', 'd-server-xxxxxxxxxxx');
+    cdk.Tags.of(this.mcBucket).add('Project', AppContext.getInstance().appName);
+    cdk.Tags.of(this.mcBucket).add('DeployEnvironment', AppContext.getInstance().env);
   }
 
   private createRDSAuroraServerless(vpc: ec2.Vpc, env: string)

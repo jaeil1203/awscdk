@@ -4,4 +4,16 @@ content-type: application/json
 
 {
   "emsUserId": "admin",
+  "mediaId": "CD1200075300-12234",
+  "contentName": "CS11036746_국제수사 - FHD",
+  "requestTime": "20210705000002",
+  "videoProfileName": "TV_FHD_H265_영화",
+  "audioProfileName": "AUDIO-MC_1TK_AAC_2CH",
+  "audioType": "MEDIA_CONVERT",
+  "inputFilePath":"Movies/",
+  "inputFileName":"CS11036746_국제수사_AC3-1tk-5.1ch_[CD1200200000].mov",
+  "inputFileDurationTime": "00:01:00",
+  "genre": "movie",
+  "resolution": "FHD",
+  "serviceType": "Normal"
 }
