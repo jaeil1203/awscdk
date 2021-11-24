@@ -43,8 +43,6 @@ export class ResourceStack extends BaseStack {
     // create S3 buckets such as input
     this.createMediaBucket(`EncodingSystem`, `input`, false, false)
 
-
-
     // rds serverless cluster creation
     this.createRDSAuroraServerless(vpc, env);
 
