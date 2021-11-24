@@ -1,0 +1,7 @@
+### ems_1
+POST https://crdruitfp6.execute-api.ap-northeast-2.amazonaws.com/prod/
+content-type: application/json
+
+{
+  "mediaId": "CD1200075300-12234",
+}
