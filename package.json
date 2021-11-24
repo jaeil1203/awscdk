@@ -25,6 +25,7 @@
     "@aws-cdk/aws-ssm": "1.130.0",
     "@aws-cdk/core": "1.130.0",
     "@aws-cdk/aws-events-targets": "1.130.0",
+    "@aws-cdk/aws-apigateway": "1.130.0",
     "aws-cdk": "^1.130.0",
     "cdk": "^1.130.0",
     "source-map-support": "^0.5.20",

@@ -6,6 +6,7 @@ import { VpcStack } from '../stack/vpc-stack';
 import { ResourceStack } from '../stack/resource-stack';
 import { TagEBSHandleStack } from '../stack/tag-ebs-volumn';
 import { ScheduleWorksHandleStack } from '../stack/schedule-works-stack';
+import { TestAPILambdaStack } from '../stack/restapi-stack'
 
 const app = new cdk.App();
 const env = app.node.tryGetContext("env")==undefined?'dev':app.node.tryGetContext("env");
@@ -25,5 +26,9 @@ new TagEBSHandleStack(app, `TagEBSHandleStack${env}`, {
 });
 
 new ScheduleWorksHandleStack(app, `ScheduleWorksHandleStack${env}`, {
+  vpc: vpcStack.vpc
+});
+
+new TestAPILambdaStack(app, `TestAPILambdaStack${env}`, {
   vpc: vpcStack.vpc
 });
