@@ -237,7 +237,7 @@ export class BatchStack extends BaseStack{
     const env = AppContext.getInstance().env;
     const jobDef = new batch.JobDefinition(this, `${tags}JobDef-${env}`, {
       container: {
-        image: ecs.ContainerImage.fromEcrRepository(EcrRepository, env),
+        image: ecs.ContainerImage.fromEcrRepository(EcrRepository, 'latest'),
         vcpus: vcpus,               // the number of vCPUs
         memoryLimitMiB: memorylimit,// memory(MiB)
         environment: {
