@@ -1,0 +1,8 @@
+### test
+POST https://ct8pqi90j0.execute-api.ap-northeast-2.amazonaws.com/prod/
+content-type: application/json
+
+{
+  "source": "test-skt-source",
+  "destination": "test-skt-destination",
+}
