@@ -37,9 +37,9 @@ if (env != 'dev') {
         cidrMask_private : 24
     }    
     batchEC2 = {
-        minCPUs : 0,
-        maxCPUs : 32,
-        desiredCPUs : 0,
+        minCPUs : 4,
+        maxCPUs : 12,
+        desiredCPUs : 4,
         InstanceSize : ec2.InstanceSize.XLARGE,
         volumeSize: 100,
         container_vCPUs: 1,
@@ -57,6 +57,11 @@ if (env != 'dev') {
 } 
 
 export const devvpc = vpc
-export const keypair = 'test-prd'
 export const batch_ec2 = batchEC2
 export const batch_fargate_spot = batchFGS
+export const appName = 'skt'
+export const keypair = 'test-prd'
+export const batch_prefix = "CopyS3"
+export const batch_computingEnv = "EC2"
+export const repository = "test-copys3"
+export const codecommit_branch = "master"
