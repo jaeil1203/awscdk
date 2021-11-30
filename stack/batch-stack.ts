@@ -41,8 +41,8 @@ export class BatchStack extends BaseStack{
     // create EC2-based compute environment, job definition and job que for batch process
     //this.createbatches(props, batchServiceRole, instanceProfile);
     this.createbatch(props, batchServiceRole, instanceProfile, 
-      "test-copys3",  // ECR repository
-      "CopyS3",  // prefix
+      env_const.repository,  // ECR repository
+      env_const.batch_prefix,  // prefix
       "",           // post fix
       env_const.batch_ec2.minCPUs, 
       env_const.batch_ec2.maxCPUs, 
@@ -59,8 +59,8 @@ export class BatchStack extends BaseStack{
     
     // create fargate-based batch  compute environment, job definition and job que for batch process(encoder)
      this.createbatchFargate(props, batchServiceRole, FargateinstanceRole, 
-      "test-copys3", // ECR repository
-      "CopyS3", // prefix
+      env_const.repository, // ECR repository
+      env_const.batch_prefix, // prefix
       env_const.batch_fargate_spot.maxCPUs, 
       env_const.batch_fargate_spot.container_vCPUs, 
       env_const.batch_fargate_spot.container_memory,
@@ -76,7 +76,7 @@ export class BatchStack extends BaseStack{
     const env = AppContext.getInstance().env;
 
     // get ECR repository from the name of repository in ECR as hevc_encoder-inspector/encoder/merger
-    const EcrRepository = ecr.Repository.fromRepositoryName(this, `ecrRepo${prefix}${postfix}`, `${app}-${ECRrepos}`);
+    const EcrRepository = ecr.Repository.fromRepositoryName(this, `ecrRepo${prefix}${postfix}`, `${ECRrepos}`);
     
     // generate computer environment (inspector/encoder/merger)
     const computeEnvironment = this.createComputeEnvironment(props.vpc, batchServiceRole, instanceProfile, 
@@ -267,7 +267,7 @@ export class BatchStack extends BaseStack{
     const account = cdk.Stack.of(this).account
     const region = cdk.Stack.of(this).region
     const env = AppContext.getInstance().env;
-    const encoderEcrRepository= ecr.Repository.fromRepositoryName(this, `ecrRepoEncoderFargate${name}`, `${app}-${ECRrepos}`);
+    const encoderEcrRepository= ecr.Repository.fromRepositoryName(this, `ecrRepoFargate${name}`, `${ECRrepos}`);
     
     // generate computer environment for encoder
     const computeEnvironmentEncoder = this.createComputeEnvironmentFargateSpot(props.vpc, batchServiceRole, 
@@ -364,7 +364,7 @@ export class BatchStack extends BaseStack{
       platformCapabilities: ['FARGATE'],
       type: "Container",
       containerProperties: {
-        image: ecs.ContainerImage.fromEcrRepository(EcrRepository, env).imageName,
+        image: ecs.ContainerImage.fromEcrRepository(EcrRepository, 'latest').imageName,
         executionRoleArn: instanceRole.roleArn,
         // refer to https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-cpu-memory-error.html
         resourceRequirements: [
