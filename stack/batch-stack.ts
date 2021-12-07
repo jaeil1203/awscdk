@@ -41,7 +41,7 @@ export class BatchStack extends BaseStack{
     // create EC2-based compute environment, job definition and job que for batch process
     //this.createbatches(props, batchServiceRole, instanceProfile);
     this.createbatch(props, batchServiceRole, instanceProfile, 
-      env_const.repository,  // ECR repository
+      env_const.batch_repository,  // ECR repository
       env_const.batch_prefix,  // prefix
       "",           // post fix
       env_const.batch_ec2.minCPUs, 
@@ -59,7 +59,7 @@ export class BatchStack extends BaseStack{
     
     // create fargate-based batch  compute environment, job definition and job que for batch process(encoder)
      this.createbatchFargate(props, batchServiceRole, FargateinstanceRole, 
-      env_const.repository, // ECR repository
+      env_const.batch_repository, // ECR repository
       env_const.batch_prefix, // prefix
       env_const.batch_fargate_spot.maxCPUs, 
       env_const.batch_fargate_spot.container_vCPUs, 
