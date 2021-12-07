@@ -36,9 +36,9 @@ export class ScheduleWorksHandleStack extends BaseStack {
     
     const env = AppContext.getInstance().env;
   
-    const lambdaRole = new iam.Role(this, 'AgentHandlelambdaRole', {
+    const lambdaRole = new iam.Role(this, 'HandlelambdaRole', {
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
-      roleName: `AgentScheduleHandleLambdaRole-${env}`,
+      roleName: `ScheduleHandleLambdaRole-${env}`,
       managedPolicies: [
         iam.ManagedPolicy.fromManagedPolicyArn(this, 'AWSLambdaBasicExecutionRole', 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'),
         iam.ManagedPolicy.fromManagedPolicyArn(this, 'AWSLambdaVPCAccessExecutionRole', 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'),
@@ -53,8 +53,8 @@ export class ScheduleWorksHandleStack extends BaseStack {
   {
     const env = AppContext.getInstance().env;
     // add lambda
-    const Hanlder = new lambda.Function(this, `AgentScheduleHandler${postfix}`, {
-      code: lambda.Code.fromAsset(`lambda/agent_schedule_works/${postfix}`),
+    const Hanlder = new lambda.Function(this, `ScheduleHandler${postfix}`, {
+      code: lambda.Code.fromAsset(`lambda/schedule_works/${postfix}`),
       handler: 'handler.lambda_handler',
       runtime: lambda.Runtime.PYTHON_3_6,
       functionName: `${postfix}-${env}`,
