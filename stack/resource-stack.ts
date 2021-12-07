@@ -203,8 +203,8 @@ export class ResourceStack extends BaseStack {
   private createEc2Sg(vpc: ec2.IVpc, env: string): ec2.SecurityGroup {
     const sg = new ec2.SecurityGroup(this, 'SecurityGroup', {
       vpc,
-      description: `SG for cudo-agent-${env}`,
-      securityGroupName: `cudo-agent-sg-${env}`,
+      description: `SG for ${env}`,
+      securityGroupName: `sg-${env}`,
     });
 
     // add IPs to inbond rule 
