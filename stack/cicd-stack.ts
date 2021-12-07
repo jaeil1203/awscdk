@@ -67,7 +67,7 @@ export class CicdStack extends BaseStack {
     cdk.Tags.of(this.buildBucket).add('Name', `encsys-buildBucket`);
 
     // get codecommit repository from RepositoryName
-    this.srcRepo = codecommit.Repository.fromRepositoryName(this, 'codecommitRepo', env_const.repository);
+    this.srcRepo = codecommit.Repository.fromRepositoryName(this, 'codecommitRepo', env_const.batch_repository);
     
     cdk.Tags.of(this.srcRepo).add('map-migrated', 'd-server-xxxxxxxxxx');
     cdk.Tags.of(this.srcRepo).add('Project', this.appName);
@@ -75,7 +75,7 @@ export class CicdStack extends BaseStack {
     cdk.Tags.of(this.srcRepo).add('Name', `encsys-srcRepo`);
 
     // get ecr repository from RepositoryName
-    this.Repository = ecr.Repository.fromRepositoryName(this, 'ecrRepo', env_const.repository);
+    this.Repository = ecr.Repository.fromRepositoryName(this, 'ecrRepo', env_const.batch_repository);
 
     // create main pipeline
     this.createPipeline();
@@ -133,7 +133,7 @@ export class CicdStack extends BaseStack {
     const imageBuild = this.createBuildProject(
       'PipelineImageBuild', 
       `${this.appName}-pipeline-image-build`, 
-      'latest', env_const.repository,
+      'latest', env_const.batch_repository,
       codebuild.BuildSpec.fromSourceFilename('codebuild/buildspec.yaml'),
     ); 
     
@@ -141,7 +141,7 @@ export class CicdStack extends BaseStack {
     const sourceAction = new codepipeline_actions.CodeCommitSourceAction({
       actionName: 'CommitOnMain',
       repository: this.srcRepo,
-      branch: env_const.codecommit_branch,
+      branch: env_const.batch_branch,
       codeBuildCloneOutput: true,
       output: sourceOutput,
     });
