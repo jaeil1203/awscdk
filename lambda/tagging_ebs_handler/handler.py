@@ -14,7 +14,7 @@ def lambda_handler(event, _context):
     
     if ids: # add tags
         ec2.create_tags(Resources=ids, Tags= [
-            {'Key': 'map-migrated', 'Value': 'd-server-xxxxxxxxxxxx}, 
+            {'Key': 'map-migrated', 'Value': 'd-server-xxxxxxxxxxxx}'}, 
             {'Key': 'Project', 'Value': os.environ['APP_NAME']},
             {'Key': 'DeployEnvironment', 'Value': 'dev'},
         ])
