@@ -111,7 +111,7 @@ export class TestAPILambdaStack extends BaseStack {
     });
 
     // add IPs to inbond rule 
-    this.AddInboudRule(sg, "xxxxxxxxxxxxxx/32", "from SKT")
+    this.AddInboudRule(sg, "xxxxxxxxxxxxxx/32", "from XXXX")
     
     return sg
   }

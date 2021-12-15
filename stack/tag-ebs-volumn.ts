@@ -89,7 +89,7 @@ export class TagEBSHandleStack extends BaseStack {
     });
 
     // auto tag for the event rule    
-    cdk.Tags.of(cloudwatchEventRule).add('map-migrated', 'd-server-00wkp68bblxi7u');
+    cdk.Tags.of(cloudwatchEventRule).add('map-migrated', 'd-xxxxxxxxxxxxxxxxxxxx');
     cdk.Tags.of(cloudwatchEventRule).add('Project', AppContext.getInstance().appName);
     cdk.Tags.of(cloudwatchEventRule).add('DeployEnvironment', AppContext.getInstance().env);
     cdk.Tags.of(cloudwatchEventRule).add('Name', `cmps-ErrorHandle`);

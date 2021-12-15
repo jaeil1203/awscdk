@@ -100,8 +100,8 @@ export class ResourceStack extends BaseStack {
     const s3policy = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       principals: [
-        new iam.ArnPrincipal(`arn:aws:iam::${account}:user/jaeilkim`),
-        new iam.ArnPrincipal(`arn:aws:iam::${account}:user/moonjmee`),     
+        new iam.ArnPrincipal(`arn:aws:iam::${account}:user/xxxxxxx`),
+        new iam.ArnPrincipal(`arn:aws:iam::${account}:user/xxxxxxx`),     
       ],
       actions: [            
         "s3:ListBucket",
@@ -208,7 +208,7 @@ export class ResourceStack extends BaseStack {
     });
 
     // add IPs to inbond rule 
-    this.AddInboudRule(sg, "1.224.3.174/32", "from SKT")
+    this.AddInboudRule(sg, "xxxxxxxxxxxxxxxxxxx/32", "from XXXX")
     
     return sg
   }
